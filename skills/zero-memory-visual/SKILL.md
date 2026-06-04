@@ -27,6 +27,8 @@ python3 skills/zero-memory-visual/scripts/render_memory_visual.py \
 
 The default output is `.zero-memory/tmp/zero-memory-visual/index.html`. Pass `--output <path>` when the workspace has stricter scratch-output placement rules.
 
+Freshness rule: every invocation of this skill must regenerate the dashboard from the current `--root` memory graph before serving, opening, or reporting an existing URL. Do not rely on an older generated `index.html` or a long-running server as evidence that the graph is current; rerun the renderer first, then verify the served page when applicable.
+
 ## What The UI Shows
 
 - An init-node entry view that shows the graph's starting memories first.
@@ -34,6 +36,7 @@ The default output is `.zero-memory/tmp/zero-memory-visual/index.html`. Pass `--
 - Readability controls for init nodes, drilldown, focused overview, or full matching-node graph modes.
 - A sortable table with every memory and its recall metrics.
 - Per-memory details: description, status, layer, parents, children, related memories, related files, and common recall routes.
+- Generated, source-event, and last-used timestamps displayed in the viewer's local timezone, while raw UTC values remain available for audit where useful.
 - Recall frequency from observability events:
   - `recall_count`: how often a memory appeared in graph-load or index-query results.
   - `selected_count`: how often an agent selected it as relevant.
@@ -44,15 +47,16 @@ The default output is `.zero-memory/tmp/zero-memory-visual/index.html`. Pass `--
 
 ## Workflow
 
-1. Run the script from the workspace root or pass an explicit `--root`.
-2. Use `--days <n>` to choose the rolling observability window; default is `30`.
-3. Keep `--writer-scope all` for normal visualization so the dashboard aggregates all visible writer shards.
-4. Use the default `Init nodes` graph for first inspection; it shows only the memory graph's entry points.
-5. Click an init node to enter layer drilldown, which centers that memory and lays out upstream parents, `load_next` children, related peers, and other correlated nodes in separate columns.
-6. Keep clicking graph nodes or table rows to make that memory the drilldown center and continue walking deeper through the graph.
-7. Use the UI graph-mode selector for focused overview or full matching-node audit views.
-8. Use `--max-graph-nodes <n>` to adjust the drilldown or overview graph size when needed.
-9. If the user wants to inspect it immediately, use `--serve`; otherwise provide the generated HTML path.
+1. Run the renderer from the workspace root or pass an explicit `--root` so the output is rebuilt from the current memory graph.
+2. If a dashboard server is already running, treat it only as a reusable transport: overwrite the generated output first, then verify that the served page responds from the refreshed file. Restart the server if it cannot serve the refreshed output.
+3. Use `--days <n>` to choose the rolling observability window; default is `30`.
+4. Keep `--writer-scope all` for normal visualization so the dashboard aggregates all visible writer shards.
+5. Use the default `Init nodes` graph for first inspection; it shows only the memory graph's entry points.
+6. Click an init node to enter layer drilldown, which centers that memory and lays out upstream parents, `load_next` children, related peers, and other correlated nodes in separate columns.
+7. Keep clicking graph nodes or table rows to make that memory the drilldown center and continue walking deeper through the graph.
+8. Use the UI graph-mode selector for focused overview or full matching-node audit views.
+9. Use `--max-graph-nodes <n>` to adjust the drilldown or overview graph size when needed.
+10. If the user wants to inspect it immediately, use `--serve`; otherwise provide the generated HTML path.
 
 ## TypeScript UI Source
 

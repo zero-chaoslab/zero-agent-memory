@@ -22,6 +22,36 @@ const numberKeys = new Set([
 function metric(node, key) {
     return node.metrics[key] ?? 0;
 }
+function pad2(value) {
+    return String(value).padStart(2, '0');
+}
+function timezoneOffset(date) {
+    const offsetMinutes = -date.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const absolute = Math.abs(offsetMinutes);
+    return `${sign}${pad2(Math.floor(absolute / 60))}:${pad2(absolute % 60)}`;
+}
+function formatTimestamp(value) {
+    if (!value)
+        return 'none';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime()))
+        return value;
+    return [
+        date.getFullYear(),
+        '-',
+        pad2(date.getMonth() + 1),
+        '-',
+        pad2(date.getDate()),
+        'T',
+        pad2(date.getHours()),
+        ':',
+        pad2(date.getMinutes()),
+        ':',
+        pad2(date.getSeconds()),
+        timezoneOffset(date),
+    ].join('');
+}
 function searchable(node) {
     return [
         node.id,
@@ -505,8 +535,9 @@ function renderStats(nodes) {
 function renderTable(nodes) {
     const rows = sortedNodes(nodes).map(node => {
         const selected = state.selectedId === node.id ? ' class="selected"' : '';
+        const lastUsed = formatTimestamp(node.metrics.last_used_at);
         return `<tr${selected} data-id="${node.id}">
-          <td><div class="memoryId">${node.id}</div><div class="pill">${node.metrics.last_used_at || 'never used'}</div></td>
+          <td><div class="memoryId">${node.id}</div><div class="pill" title="${node.metrics.last_used_at || ''}">${lastUsed === 'none' ? 'never used' : lastUsed}</div></td>
           <td>${metric(node, 'recall_count')}</td>
           <td>${metric(node, 'selected_count')}</td>
           <td>${metric(node, 'helpful_count')}</td>
@@ -785,7 +816,7 @@ function renderDetails(node) {
           <dt>Selected / helpful</dt><dd>${metric(node, 'selected_count')} / ${metric(node, 'helpful_count')}</dd>
           <dt>Missed / stale / false positive</dt><dd>${metric(node, 'missed_recall_count')} / ${metric(node, 'stale_hit_count')} / ${metric(node, 'false_positive_count')}</dd>
           <dt>Hotness</dt><dd>${metric(node, 'hotness_score')}</dd>
-          <dt>Last used</dt><dd>${node.metrics.last_used_at || 'never'}</dd>
+          <dt>Last used</dt><dd title="${node.metrics.last_used_at || ''}">${node.metrics.last_used_at ? formatTimestamp(node.metrics.last_used_at) : 'never'}</dd>
           <dt>Layer / status</dt><dd>${node.layer} / ${node.status}</dd>
           <dt>Freshness</dt><dd>${node.freshness_profile} (${node.freshness_source})</dd>
           <dt>Pattern key</dt><dd>${node.pattern_key || 'none'}</dd>
@@ -858,8 +889,11 @@ function init() {
     fillFilters();
     document.getElementById('subtitle').textContent =
         `${DATA.metadata.memory_count} memories, ${DATA.metadata.edge_count} edges, ${DATA.metadata.event_count} observability events, window=${DATA.metadata.window_days} days, writer-scope=${DATA.metadata.writer_scope}.`;
-    document.getElementById('footer').textContent =
-        `Generated at ${DATA.metadata.generated_at} from ${DATA.metadata.root}. Source events: ${DATA.metadata.source_min_timestamp || 'none'} to ${DATA.metadata.source_max_timestamp || 'none'}.`;
+    const footer = document.getElementById('footer');
+    footer.textContent =
+        `Generated at ${formatTimestamp(DATA.metadata.generated_at)} from ${DATA.metadata.root}. Source events: ${formatTimestamp(DATA.metadata.source_min_timestamp)} to ${formatTimestamp(DATA.metadata.source_max_timestamp)}.`;
+    footer.title =
+        `UTC generated_at=${DATA.metadata.generated_at}; source_min_timestamp=${DATA.metadata.source_min_timestamp || 'none'}; source_max_timestamp=${DATA.metadata.source_max_timestamp || 'none'}`;
     const nodeLimit = document.getElementById('nodeLimit');
     nodeLimit.max = String(Math.max(12, DATA.metadata.memory_count));
     nodeLimit.value = String(Math.min(DATA.metadata.max_graph_nodes, DATA.metadata.memory_count));
