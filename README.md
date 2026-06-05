@@ -28,6 +28,10 @@ Add `zero-agent-memory` to your project as a skill collection, then merge the re
 
 When using Cursor or Codex, make sure those merged rules are loaded by the agent before asking it to use `zero-context-*` or `zero-memory-*` skills. The rules describe how to persist task context, curate reusable memory, keep temporary data isolated, and avoid leaking project-specific examples into this public skill collection.
 
+## Further Reading
+
+- Blog: [Simple Agent Memory](https://zero-chaoslab.github.io/posts/simple-agent-memory.html)
+
 ## Agent Rule Hooks
 
 Some agents can run command hooks that inject project rules when a prompt starts or a task state changes. The helper `scripts/print-agents-section.sh` prints one named `##` section from an `AGENTS.md` file so a project can load large rule files as smaller, ordered hook outputs.
