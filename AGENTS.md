@@ -1,4 +1,5 @@
 <INSTRUCTIONS>
+
 ## Zero Context Persistence
 - Force rule: for task-local continuation state that lets a restarted agent resume work from the saved context, the agent must use `skills/zero-context-persistence/SKILL.md`; treat `.zero-memory/tmp/current-context.txt` as the authoritative active context-path handoff, keep that exact path updated during the task, and do not switch to another context path arbitrarily.
 - **TIMING RULE — NEVER SKIP**: When the agent is using an active `context.md` and is about to present results or next steps to the user, it MUST update `context.md` FIRST, THEN respond in chat. The correct context-persistence order is always: (1) persist context -> (2) chat response. If the agent realizes it forgot to update `context.md` before responding, it must update it immediately in the same turn, not wait for the user to ask.
@@ -32,4 +33,5 @@
  - Use returned `load_next` IDs to expand selectively; for example run `python3 skills/zero-memory-curator/scripts/load_memory_graph.py --root .zero-memory/memory --start workspace.agent.workflows --depth 1`, then follow a relevant child such as `memory.curator.workflow` with `python3 skills/zero-memory-curator/scripts/load_memory_graph.py --root .zero-memory/memory --start memory.curator.workflow --depth 0`.
  - Only after the script identifies a relevant memory may the agent read that package's full `MEMORY.md`, `references/`, or `examples/`.
  - Do not read all memory details up front, and do not skip the description-loader script and jump straight to full-file reads.
+
 </INSTRUCTIONS>
