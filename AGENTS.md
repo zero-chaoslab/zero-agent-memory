@@ -16,7 +16,7 @@
 - When detail is split out, add a `## References` section to `context.md` that lists each reference file with a short description of what it contains.
 - If a reference file preserves detail moved out of an older, larger `context.md`, say that clearly in the reference description so a restarted agent knows it contains the earlier detail.
 
-## Zero-Memory Workflow
+## Zero Memory Workflow
 - Force rule: use `zero-context-persistence` as the primary capture workflow plus `zero-memory-curator` as the default workflow reminder, log non-trivial reusable learnings into `.zero-memory/daily/`, and use `.zero-memory/memory/` for curated recall.
 - Use `skills/zero-memory-curator/SKILL.md` whenever prior experience or a blocker may matter.
 - Treat this guidance as the default reminder mechanism instead of relying on the deprecated legacy skill.

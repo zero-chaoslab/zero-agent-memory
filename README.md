@@ -61,7 +61,7 @@ Claude settings example:
           },
           {
             "type": "command",
-            "command": "bash path/to/zero-agent-memory/scripts/print-agents-section.sh --agents-file path/to/your/project/AGENTS.md \"Zero-Memory Workflow\""
+            "command": "bash path/to/zero-agent-memory/scripts/print-agents-section.sh --agents-file path/to/your/project/AGENTS.md \"Zero Memory Workflow\""
           }
         ]
       }
@@ -102,6 +102,8 @@ Use these skills through an agent that can load skill instructions. For example,
 - `zero-memory-visual` when you want the agent to show the `ZeroAgentMemory` web dashboard.
 
 The agent should run the underlying scripts and choose safe output locations for the current workspace. Users normally should not need to run the dashboard script by hand.
+
+If the earlier `AGENTS.md` rules and hook setup are already configured, `zero-context-persistence`, `zero-context-compact`, and `zero-memory-curator` can be triggered automatically by the agent when appropriate, so users do not need to invoke those skills explicitly in normal usage.
 
 ## Data Layout
 
