@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/skills/zero-memory-curator/scripts/print-agents-section.sh --agents-file AGENTS.md \"Zero Context Persistence\""
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/skills/zero-memory-curator/scripts/print-agents-section.sh --agents-file AGENTS.md \"Zero Memory Workflow\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "TaskUpdate",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/skills/zero-memory-curator/scripts/print-agents-section.sh --agents-file AGENTS.md \"Zero Context Persistence\""
+          }
+        ]
+      }
+    ]
+  }
+}

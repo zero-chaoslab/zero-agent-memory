@@ -7,7 +7,7 @@ Usage: print-agents-section.sh [--agents-file PATH] <section-title>
 
 Print one `## <section-title>` section from an AGENTS.md file.
 When --agents-file is omitted, the script searches upward from the current
-directory and then falls back to the AGENTS.md next to this repository.
+directory and then falls back to this repository's AGENTS.md.
 EOF
 }
 
@@ -36,7 +36,7 @@ fi
 
 if [[ -z "$agents_file" ]]; then
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  repo_agents="$(cd "$script_dir/.." && pwd)/AGENTS.md"
+  repo_agents="$(cd "$script_dir/../../.." && pwd)/AGENTS.md"
   if [[ -f "$repo_agents" ]]; then
     agents_file="$repo_agents"
   fi

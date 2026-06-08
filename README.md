@@ -6,6 +6,10 @@ The project is intended to be public and generic. Keep examples and documentatio
 
 Declaration: this project is provided only for learning and research purposes and is not intended for commercial use.
 
+## Further Reading
+
+- Blog: [Simple Agent Memory](https://zero-chaoslab.github.io/posts/simple-agent-memory.html)
+
 ## Requirements
 
 Required for normal skill usage:
@@ -24,29 +28,58 @@ Normal dashboard generation does not require TypeScript tooling because the comp
 
 ## Quick Start
 
-Add `zero-agent-memory` to your project as a skill collection, then merge the relevant rules from this repository's `AGENTS.md` into your own project's agent rules.
-
-When using Cursor or Codex, make sure those merged rules are loaded by the agent before asking it to use `zero-context-*` or `zero-memory-*` skills. The rules describe how to persist task context, curate reusable memory, keep temporary data isolated, and avoid leaking project-specific examples into this public skill collection.
-
-## Further Reading
-
-- Blog: [Simple Agent Memory](https://zero-chaoslab.github.io/posts/simple-agent-memory.html)
-
-## Agent Rule Hooks
-
-Some agents can run command hooks that inject project rules when a prompt starts or a task state changes. The helper `scripts/print-agents-section.sh` prints one named `##` section from an `AGENTS.md` file so a project can load large rule files as smaller, ordered hook outputs.
-
-Example:
+First clone this repository:
 
 ```bash
-bash path/to/zero-agent-memory/scripts/print-agents-section.sh \
-  --agents-file path/to/your/project/AGENTS.md \
-  "Zero Context Persistence"
+git clone https://github.com/zero-chaoslab/zero-agent-memory.git
+cd zero-agent-memory
 ```
 
-Use `--agents-file` when the hook must load a specific workspace's rules. If it is omitted, the helper searches upward from the current directory for `AGENTS.md` and then falls back to the `AGENTS.md` in this repository.
+Then run the installer for the agent setup you want:
 
-Claude settings example:
+```bash
+bash install.sh {your project path} codex
+```
+
+Use `cursor`, `claude`, or `all` instead of `codex` when needed.
+
+The installer appends the generic rules to the target project's `AGENTS.md`, copies skills for the selected agent, and creates Claude hook settings when installing Claude into a project that does not already have `.claude/settings.json`.
+
+### Manual Configuration
+
+Replace `{your project path}` with the target project path. Each agent-specific setup below appends the generic rules to the target project's `AGENTS.md`; review the merged rules if the target project already has an `AGENTS.md`.
+
+#### Codex/Cursor
+
+For Codex, copy all skills into the target project's `.codex/skills` directory:
+
+```bash
+cat AGENTS.md >> {your project path}/AGENTS.md
+mkdir -p {your project path}/.codex/skills
+cp -R skills/* {your project path}/.codex/skills/
+```
+
+For Cursor, copy all skills into the target project's `.cursor/skills` directory:
+
+```bash
+cat AGENTS.md >> {your project path}/AGENTS.md
+mkdir -p {your project path}/.cursor/skills
+cp -R skills/* {your project path}/.cursor/skills/
+```
+
+After copying, start a new agent session from the target project so the merged rules and copied skills can be discovered.
+
+#### Claude
+
+For Claude, copy all skills into the target project's `.claude/skills` directory:
+
+```bash
+cat AGENTS.md >> {your project path}/AGENTS.md
+mkdir -p {your project path}/.claude/skills
+cp -R skills/* {your project path}/.claude/skills/
+```
+
+Then add hook configuration to `{your project path}/.claude/settings.json`. The hooks run the copied Claude skill script from the target project root when Claude receives a prompt or records a task update.
 
 ```json
 {
@@ -57,11 +90,11 @@ Claude settings example:
         "hooks": [
           {
             "type": "command",
-            "command": "bash path/to/zero-agent-memory/scripts/print-agents-section.sh --agents-file path/to/your/project/AGENTS.md \"Zero Context Persistence\""
+            "command": "bash .claude/skills/zero-memory-curator/scripts/print-agents-section.sh --agents-file AGENTS.md \"Zero Context Persistence\""
           },
           {
             "type": "command",
-            "command": "bash path/to/zero-agent-memory/scripts/print-agents-section.sh --agents-file path/to/your/project/AGENTS.md \"Zero Memory Workflow\""
+            "command": "bash .claude/skills/zero-memory-curator/scripts/print-agents-section.sh --agents-file AGENTS.md \"Zero Memory Workflow\""
           }
         ]
       }
@@ -72,7 +105,7 @@ Claude settings example:
         "hooks": [
           {
             "type": "command",
-            "command": "bash path/to/zero-agent-memory/scripts/print-agents-section.sh --agents-file path/to/your/project/AGENTS.md \"Zero Context Persistence\""
+            "command": "bash .claude/skills/zero-memory-curator/scripts/print-agents-section.sh --agents-file AGENTS.md \"Zero Context Persistence\""
           }
         ]
       }
@@ -81,7 +114,7 @@ Claude settings example:
 }
 ```
 
-Add one command hook per section that should be loaded. Keep the section names exactly the same as the `##` headings in the selected `AGENTS.md`.
+Keep the section names exactly the same as the `##` headings in the selected `AGENTS.md`.
 
 ## Skills
 
