@@ -8,7 +8,7 @@ Declaration: this project is provided only for learning and research purposes an
 
 ## Further Reading
 
-- Blog: [Simple Agent Memory](https://zero-chaoslab.github.io/posts/simple-agent-memory.html)
+- Blog: [Building Agent Memory from Scratch](https://zero-chaoslab.github.io/posts/building-agent-memory-from-scratch.html)
 
 ## Requirements
 
