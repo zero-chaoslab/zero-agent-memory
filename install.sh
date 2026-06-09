@@ -4,7 +4,6 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  bash install.sh {your project path} [codex|cursor|claude|all]
   bash install.sh --project {your project path} --agent codex
 
 Install zero-agent-memory rules and skills into a target project.
@@ -53,7 +52,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$project" ]]; then
-  echo "Missing target project path." >&2
+  echo "Missing target project path. Use --project {your project path}." >&2
   usage >&2
   exit 64
 fi
@@ -61,7 +60,7 @@ fi
 case "$agent" in
   codex|cursor|claude|all) ;;
   *)
-    echo "Unsupported agent: $agent" >&2
+    echo "Unsupported agent: $agent. Use --agent codex, cursor, claude, or all." >&2
     usage >&2
     exit 64
     ;;

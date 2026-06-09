@@ -28,6 +28,11 @@ Normal dashboard generation does not require TypeScript tooling because the comp
 
 ## Quick Start
 
+Choose one setup path:
+
+- Use Auto Configuration for the normal `install.sh` setup.
+- Use Manual Configuration when you want to inspect, copy, or merge each file by hand.
+
 First clone this repository:
 
 ```bash
@@ -35,17 +40,21 @@ git clone https://github.com/zero-chaoslab/zero-agent-memory.git
 cd zero-agent-memory
 ```
 
+### Auto Configuration
+
 Then run the installer for the agent setup you want:
 
 ```bash
-bash install.sh {your project path} codex
+bash install.sh --project {your project path} --agent codex
 ```
 
-Use `cursor`, `claude`, or `all` instead of `codex` when needed.
+Use `--agent cursor`, `--agent claude`, or `--agent all` instead of `--agent codex` when needed.
 
-The installer appends the generic rules to the target project's `AGENTS.md`, copies skills for the selected agent, and creates Claude hook settings when installing Claude into a project that does not already have `.claude/settings.json`.
+The installer appends the generic rules to the target project's `AGENTS.md`, copies skills for the selected agent, and creates Claude hook settings when installing Claude into a project that does not already have `.claude/settings.json`. If you use `install.sh`, you do not need to repeat the manual configuration steps below.
 
 ### Manual Configuration
+
+Use this section instead of `install.sh` when you want to configure the target project yourself.
 
 Replace `{your project path}` with the target project path. Each agent-specific setup below appends the generic rules to the target project's `AGENTS.md`; review the merged rules if the target project already has an `AGENTS.md`.
 
