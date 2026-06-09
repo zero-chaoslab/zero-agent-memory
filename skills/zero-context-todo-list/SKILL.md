@@ -36,7 +36,6 @@ Once the active context is known:
 
 - The durable markdown file in the active context is the source of truth.
 - Do not use only transient task-tracking state as a substitute for the file.
-- Keep the todo file in English unless the user explicitly asks for another language.
 - Keep the list restart-safe, concise, and easy to edit later.
 
 ## When The User Asks To Create Or Add Items

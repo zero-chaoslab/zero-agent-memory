@@ -18,6 +18,10 @@ Do not auto-apply this skill.
 - The agent may recommend it when repeated missed-recall reflections suggest system-level design debt.
 - The skill may run only when the user explicitly requests the optimization or explicitly approves the recommendation.
 
+## Script Path Convention
+
+When this skill says to run a bundled helper, resolve it from the referenced skill's `scripts/` directory instead of hardcoding a workspace-specific skill path. In examples below, `${reflection_scripts}` means the resolved `scripts/` directory for the active `zero-memory-reflection` skill, and `${curator_scripts}` means the resolved `scripts/` directory for the active `zero-memory-curator` skill.
+
 ## Mode A: Local Reflection
 
 Use this mode when the problem is centered on a known memory pair, a known reflection entry, or a local recall miss.
@@ -35,12 +39,12 @@ Workflow:
 2. Load the memory graph description-first with `load_memory_graph.py`.
 3. Query targeted neighbors with `query_memory_index.py` and only then read selected `MEMORY.md` details.
 4. If `.zero-memory/observability/reports/latest/` exists, consult the hot-memory, routing-friction, stale-but-hot, and reflection-priority reports to understand whether the local miss is isolated or part of a broader repeated pattern. If that shared reduced view does not exist yet and the signal would help, generate it with `report_memory_observability.py`; default report reads aggregate all visible writer shards.
-5. If structured lookup did not find a strong candidate, run `python3 skills/zero-memory-curator/scripts/shortlist_similar_memories.py --root .zero-memory/memory --memory-id <new-memory-id>` or `--description "<new description>"` to get a suggestion-only shortlist of same-meaning memories.
+5. If structured lookup did not find a strong candidate, run `python3 "${curator_scripts}/shortlist_similar_memories.py" --root .zero-memory/memory --memory-id <new-memory-id>` or `--description "<new description>"` to get a suggestion-only shortlist of same-meaning memories.
 6. Diagnose whether the miss came from metadata, wording, graph shape, `zero-memory-curator` guidance, skill descriptions, or tooling.
 7. Apply the smallest refactor that materially improves future recall.
 8. Revalidate the graph and record the optimization result in zero-memory.
 
-If the reflection note has not been captured yet, scaffold it first with `python3 skills/zero-memory-curator/scripts/scaffold_missed_recall_reflection.py --root .zero-memory/memory --daily-root .zero-memory/daily --reflection-root .zero-memory/reflection --new-memory-id <new-memory-id> --existing-memory-id <existing-memory-id> --discovery-source graph-traversal --trigger late-duplicate-discovery --miss-reason "<visible reason>" --improvement-advice "<specific recall-surface fix>" --write`, changing `--discovery-source`, `--trigger`, and the advice fields when the case came from semantic shortlist, validator output, manual review, or user correction.
+If the reflection note has not been captured yet, scaffold it first with `python3 "${curator_scripts}/scaffold_missed_recall_reflection.py" --root .zero-memory/memory --daily-root .zero-memory/daily --reflection-root .zero-memory/reflection --new-memory-id <new-memory-id> --existing-memory-id <existing-memory-id> --discovery-source graph-traversal --trigger late-duplicate-discovery --miss-reason "<visible reason>" --improvement-advice "<specific recall-surface fix>" --write`, changing `--discovery-source`, `--trigger`, and the advice fields when the case came from semantic shortlist, validator output, manual review, or user correction.
 
 If there is no new duplicate memory and the issue is that an already-existing memory was not recalled, scaffold with `--missed-memory-id <memory-id>` instead of the new/existing pair and capture the visible evidence that explains the miss.
 
@@ -56,7 +60,7 @@ Typical triggers:
 
 Workflow:
 
-1. Run `python3 skills/zero-memory-reflection/scripts/audit_memory_graph.py --root .zero-memory/memory`.
+1. Run `python3 "${reflection_scripts}/audit_memory_graph.py" --root .zero-memory/memory`.
 2. If the default audit returns no clusters but the user still wants exploratory review, rerun it once with a lower `--min-pair-score` such as `0.18` and treat that second pass as a candidate-discovery surface, not as an approval-ready simplification plan.
 3. If `.zero-memory/observability/reports/latest/` exists, let those reports influence which clusters deserve review first, but do not treat telemetry as proof that two memories mean the same thing. If needed, regenerate the shared reduced view first; the default report scope is all visible writer shards, not only the current writer.
 4. Review the suggested clusters, summary candidates, and child actions.
@@ -78,9 +82,9 @@ Use this flow only after a full-graph audit cluster is explicitly approved.
 
 Workflow:
 
-1. Save the audit output as JSON, for example: `python3 skills/zero-memory-reflection/scripts/audit_memory_graph.py --root .zero-memory/memory --format json > <audit-plan.json>`.
-2. Preview the approved cluster without writing: `python3 skills/zero-memory-reflection/scripts/apply_memory_graph_refactor.py --root .zero-memory/memory --plan <audit-plan.json> --cluster-id <cluster-id>`.
-3. Apply it explicitly with `python3 skills/zero-memory-reflection/scripts/apply_memory_graph_refactor.py --root .zero-memory/memory --plan <audit-plan.json> --cluster-id <cluster-id> --write` or `--cluster-index <n>`. By default the structured apply journal goes under `.zero-memory/history/zero-memory-reflection/`; pass `--change-journal-path <path>` only when you need a custom location.
+1. Save the audit output as JSON, for example: `python3 "${reflection_scripts}/audit_memory_graph.py" --root .zero-memory/memory --format json > <audit-plan.json>`.
+2. Preview the approved cluster without writing: `python3 "${reflection_scripts}/apply_memory_graph_refactor.py" --root .zero-memory/memory --plan <audit-plan.json> --cluster-id <cluster-id>`.
+3. Apply it explicitly with `python3 "${reflection_scripts}/apply_memory_graph_refactor.py" --root .zero-memory/memory --plan <audit-plan.json> --cluster-id <cluster-id> --write` or `--cluster-index <n>`. By default the structured apply journal goes under `.zero-memory/history/zero-memory-reflection/`; pass `--change-journal-path <path>` only when you need a custom location.
 4. Treat `summary_reconciliation` output as mandatory follow-up when a reused summary anchor changes scope. If the apply step adds or removes active children, compare the summary's `## Description` and `## Details` against the new `load_next` set in the same pass; do not stop after frontmatter-only rewrites.
 5. Let the apply step create or reuse the summary memory, redirect active parents safely, write any approved `subsumed` lifecycle changes, and persist a structured change journal outside the memory body by default under `.zero-memory/history/zero-memory-reflection/`.
 6. Use `status: subsumed` plus reciprocal `subsumed_by` / `abstracts` only for memories that are absorbed into a better abstraction without being wrong.
@@ -95,7 +99,7 @@ Use these rules across all three workflows:
    - `.zero-memory/reflection/` advice notes
    - known memory IDs
    - nearby parents, children, and lateral neighbors
-2. Load the current graph surface with `python3 skills/zero-memory-curator/scripts/load_memory_graph.py --root .zero-memory/memory --depth 0`, then narrow with `--start <memory-id>` and `--include-details` only for selected targets.
+2. Load the current graph surface with `python3 "${curator_scripts}/load_memory_graph.py" --root .zero-memory/memory --depth 0`, then narrow with `--start <memory-id>` and `--include-details` only for selected targets.
 3. Query structured lookup surfaces before broad semantic reading:
    - exact `Pattern-Key`
    - `query_memory_index.py --related-file ...`
@@ -133,7 +137,7 @@ Use these rules across all three workflows:
 
 ### After Mode A
 
-1. Run `python3 skills/zero-memory-curator/scripts/validate_memory_graph.py --root .zero-memory/memory --repair`.
+1. Run `python3 "${curator_scripts}/validate_memory_graph.py" --root .zero-memory/memory --repair`.
 2. Re-run the targeted `load_memory_graph.py` or `query_memory_index.py` commands that previously missed the memory.
 3. Confirm the improved route is now discoverable without a broad text search.
 4. Call out any remaining warnings and why they are non-blocking.

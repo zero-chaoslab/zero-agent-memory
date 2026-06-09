@@ -19,6 +19,10 @@ Use this skill when either condition is true:
 
 Both hard limits are automatic triggers from `zero-context-persistence`.
 
+## Script Path Convention
+
+When this skill says to run a bundled helper, resolve it from the referenced skill's `scripts/` directory instead of hardcoding a workspace-specific skill path. In examples below, `${context_persistence_scripts}` means the resolved `scripts/` directory for the active `zero-context-persistence` skill.
+
 ## Workflow
 
 1. Determine the target context path.
@@ -34,7 +38,7 @@ Both hard limits are automatic triggers from `zero-context-persistence`.
 4. When the file is over `20,000` bytes or `200` lines, run the deterministic compaction script:
 
 ```bash
-python3 skills/zero-context-persistence/scripts/compact_context.py \
+python3 "${context_persistence_scripts}/compact_context.py" \
   --context-path .zero-memory/context/<task_slug>/context.md \
   --max-bytes 20000 \
   --max-lines 200 \

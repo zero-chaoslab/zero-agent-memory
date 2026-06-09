@@ -7,19 +7,23 @@ description: Build and optionally serve a local TypeScript-backed web UI that vi
 
 Use this skill when a user wants a browser-based view of the zero-memory graph, wants to inspect memory recall frequency, or wants to combine curated memory structure with observability telemetry.
 
+## Path Convention
+
+When this skill says to run a bundled helper or compile a bundled asset, resolve it from this skill's own directory instead of hardcoding a workspace-specific skill path. In examples below, `${visual_scripts}` means the resolved `scripts/` directory for the active `zero-memory-visual` skill, and `${visual_assets}` means its resolved `assets/` directory.
+
 ## Quick Start
 
 From the workspace root, generate a standalone HTML dashboard:
 
 ```bash
-python3 skills/zero-memory-visual/scripts/render_memory_visual.py \
+python3 "${visual_scripts}/render_memory_visual.py" \
   --root .zero-memory/memory
 ```
 
 Generate and serve the dashboard locally:
 
 ```bash
-python3 skills/zero-memory-visual/scripts/render_memory_visual.py \
+python3 "${visual_scripts}/render_memory_visual.py" \
   --root .zero-memory/memory \
   --serve \
   --port 8765
@@ -72,7 +76,7 @@ npx --yes --package typescript tsc \
   --strict false \
   --noImplicitAny false \
   --strictNullChecks false \
-  skills/zero-memory-visual/assets/memory_visual_app.ts
+  "${visual_assets}/memory_visual_app.ts"
 ```
 
 - Regenerate the dashboard after refreshing the snapshot.

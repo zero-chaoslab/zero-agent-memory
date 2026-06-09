@@ -9,6 +9,10 @@ Use this skill for non-trivial tasks that may need to survive an agent restart o
 
 This skill manages restart-safe task state under `.zero-memory/context/` and routes reusable cross-task observations into `.zero-memory/daily/`.
 
+## Script Path Convention
+
+When this skill says to run a bundled helper, resolve it from this skill's own `scripts/` directory instead of hardcoding a workspace-specific skill path. Before executing a shell example, either set `${context_persistence_scripts}` to the resolved `scripts/` directory for the active `zero-context-persistence` skill or substitute that directory directly.
+
 ## 1) Determine the active context path first
 
 Before doing substantial work or closing a task that already has saved context, or when the user or workflow explicitly wants one:
@@ -60,8 +64,6 @@ Only do this once the path is known or a new context is explicitly required:
    - `references/` for deeper task details that should remain durable but should not clutter `context.md`
    - `scripts/` for useful task-local helpers that support the current task
 
-Use English unless the user explicitly requests another language.
-
 Example header:
 
 ```markdown
@@ -105,7 +107,7 @@ When `context.md` becomes too large or the user asks to summarize it:
 4. Add a `## References` section in `context.md` that lists each reference file with a short description of what it contains.
 5. If the detail came from an older, larger `context.md`, say that clearly in the reference descriptions so a restarted agent knows those files preserve the original detail.
 6. After compaction, compare the rewritten summary with the preserved references. If the rewrite moved or compressed reusable knowledge that would now be easier to miss, including corrections, workflow rules, debugging methods, code-structure or call-path analysis, behavior notes, design decisions, or other durable technical insight, append a daily-learning entry and hand its ID to `zero-memory-curator` in the same turn.
-7. Keep `context.md` under `20,000` bytes and `200` lines. Use `python3 skills/zero-context-persistence/scripts/compact_context.py --max-bytes 20000 --max-lines 200` when a deterministic rewrite into classified `references/` files is needed.
+7. Keep `context.md` under `20,000` bytes and `200` lines. Use `python3 "${context_persistence_scripts}/compact_context.py" --max-bytes 20000 --max-lines 200` when a deterministic rewrite into classified `references/` files is needed.
 
 Example reference descriptions:
 
@@ -142,7 +144,7 @@ When a script is important for continuation, mention it in `context.md` with:
 
 If a script becomes broadly reusable across tasks, consider promoting it into a project skill or a shared script location instead of keeping it task-local forever.
 
-Use `zero-context-compact` when the task needs a deterministic compaction pass that snapshots the old `context.md`, rewrites a concise summary, and splits durable detail into named `references/` files. The underlying rewrite command is `python3 skills/zero-context-persistence/scripts/compact_context.py --max-bytes 20000 --max-lines 200`.
+Use `zero-context-compact` when the task needs a deterministic compaction pass that snapshots the old `context.md`, rewrites a concise summary, and splits durable detail into named `references/` files. The underlying rewrite command is `python3 "${context_persistence_scripts}/compact_context.py" --max-bytes 20000 --max-lines 200`.
 
 ## 6) Design-analysis workflows
 
