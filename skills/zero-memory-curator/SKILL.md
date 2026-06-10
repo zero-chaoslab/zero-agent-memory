@@ -39,6 +39,7 @@ Use this skill proactively when the current task may benefit from prior project 
 - Keep generated reverse and lookup indexes synchronized from live package metadata instead of hand-maintaining duplicate backlinks.
 - Keep `init` and `abstract` nodes focused on routing, scope, and boundary guidance; keep most concrete technical facts on the relevant `load_next` children.
 - Keep each active memory's `## Description` plus `## Details` to at most 100 non-empty lines; when it grows larger, split it into two graph-linked memories and update `load_next`, parent routing, `related`, `registry.yml`, and provenance metadata instead of keeping one oversized package.
+- Keep selected-memory oversize warnings self-healing: when the current task selected, edited, or materially relied on an active memory and validation reports that memory is oversized, split it in the same curation pass when a clear semantic boundary exists.
 - Keep `.zero-memory/skills/<skill-name>/` as an optional extracted-skill home chosen deliberately during memory work, not as an automatic retirement destination for active `skills/` entries.
 
 Do not treat a folder tree as the only navigation system. The real discovery path is the curated graph formed by `load_next` and `related`.
@@ -168,7 +169,16 @@ When curating new information:
    - split an oversized active memory into two graph-linked memories when the combined `## Description` plus `## Details` would exceed 100 non-empty lines
 4. Create or update the right memory package under `.zero-memory/memory/<memory-slug>/`.
 5. If the trigger was a user correction or agent self-diagnosis about a missed reusable workflow, missed recall, or missed promotion, treat the daily note as insufficient by itself: before ending the turn, make sure the durable rule is reachable through an existing active memory or a newly created reachable memory node, and update routing or workflow docs if the miss came from guidance rather than only one local node.
-6. Maintain the graph and lifecycle metadata:
+6. Treat an oversized-memory warning as in-scope curation work without waiting for a separate user request when all of these are true:
+   - the warning names a memory that the current task selected, edited, or materially relied on
+   - the oversized memory is part of the current task's subject, not merely an unrelated validator warning
+   - a coherent subtopic can be moved into a child memory without losing the parent's routing value
+   - the split can preserve provenance, parent `load_next`, useful `related` links, `registry.yml`, and validation health
+7. Do not split mechanically:
+   - if the oversized memory is unrelated to the current task, call it out as a non-blocking follow-up
+   - if the semantic boundary is unclear, leave the warning visible and create or update a daily/reflection note instead of guessing
+   - if the cleanup requires whole-graph abstraction across many memories, recommend `zero-memory-reflection` and wait for explicit approval
+8. Maintain the graph and lifecycle metadata:
    - keep `registry.yml` aligned and store canonical package paths there as workspace-relative paths such as `.zero-memory/memory/<slug>/MEMORY.md`, not checkout-specific absolute paths
    - keep `init-memory-set.yml` intentionally small
    - connect each non-init memory to at least one reachable parent via `load_next`
@@ -181,10 +191,10 @@ When curating new information:
    - when an approved higher-level abstraction absorbs low-value memories that are not wrong, mark the absorbed nodes `subsumed`, point them at the active summary with `subsumed_by`, and record the reciprocal `abstracts` list on the summary
    - when splitting an oversized memory, keep the original node as the best summary or router, move one coherent subtopic into a new active child, add the child to the parent's `load_next`, preserve lateral `related` links where useful, and update any previous parent that should now route to the child directly
    - when memory insert/update/delete/recall work shows a reusable workflow would benefit from a stable skill surface, extract or refresh `.zero-memory/skills/<skill-name>/` intentionally and expose it through memory `related_files` plus routing details; do not auto-move an active `skills/` copy unless that migration is explicitly requested
-7. Run `validate_memory_graph.py`.
-8. If validation fails, attempt safe repair first, rerun validation, and only proceed automatically when blocking errors are gone.
-9. If warnings remain, call them out explicitly and explain why they are non-blocking.
-10. If the curation pass depended on recalled memories in a way that would help future optimization, record the recall outcome through observability instead of encoding volatile usage counters into `MEMORY.md`.
+9. Run `validate_memory_graph.py`.
+10. If validation fails, attempt safe repair first, rerun validation, and only proceed automatically when blocking errors are gone.
+11. If warnings remain, call them out explicitly and explain why they are non-blocking.
+12. If the curation pass depended on recalled memories in a way that would help future optimization, record the recall outcome through observability instead of encoding volatile usage counters into `MEMORY.md`.
 
 Use this decision order so the choice is deterministic:
 
@@ -247,6 +257,8 @@ When using this skill:
 - Prefer direct local provenance IDs in frontmatter over repeating the same ID list in `## Source Extraction`.
 - Prefer confirmation metadata over unbounded frontmatter growth when a memory is repeatedly re-confirmed.
 - Prefer splitting active memories whose `## Description` plus `## Details` exceed 100 non-empty lines; keep the parent concise and route deeper detail through a new `load_next` child instead of making one large entrypoint.
+- Prefer splitting an oversized selected or materially used memory during the current curation pass when the split is semantically clear; do not leave it as a warning merely because the user did not separately ask for cleanup.
+- Prefer leaving unrelated oversized-memory warnings as explicit follow-up instead of folding unrelated graph maintenance into the current task.
 - Prefer `freshness_profile` as a cheap trust-adjustment hint instead of turning stale memories into hard validation gates.
 - Prefer refreshing `last_updated_at` whenever a memory is materially edited or explicitly revalidated against current code or environment.
 - Prefer the replacement node to explain what changed and why; keep superseded nodes lightweight and inactive by default.

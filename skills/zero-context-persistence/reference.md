@@ -120,7 +120,7 @@ If the user asks for a summary or the file has become too large:
 3. Keep the new `context.md` short and current.
 4. Add `## References` entries that explain which parts of the original context were moved into which files.
 5. Prefer descriptive filenames over generic chunk names when possible.
-6. If compaction moved or compressed reusable knowledge that would now be easy to miss, including a rule, correction, debugging method, code-structure or call-path analysis, behavior note, design decision, or other durable technical insight, append a daily-learning entry and hand it to `zero-memory-curator` in the same turn.
+6. If compaction moved or compressed cross-task reusable knowledge that would now be easy to miss, including a rule, correction, debugging method, reusable behavior note, or durable recall cue, append a daily-learning entry and hand it to `zero-memory-curator` in the same turn. Keep task-local code-structure, call-path, design rationale, and debug chronology in `references/` unless the reusable abstraction itself is clear.
 7. Keep `context.md` under `20,000` bytes and `200` lines; use `python3 skills/zero-context-persistence/scripts/compact_context.py --max-bytes 20000 --max-lines 200` when a deterministic rewrite is needed.
 
 Example split:
@@ -138,7 +138,8 @@ Example split:
 - Do not add absolute repo/worktree paths to normal task notes unless the exact path is itself part of the issue being tracked.
 - Put durable debug detail in `references/`; put disposable raw logs and build output under workspace-root `.zero-memory/tmp/<context_name>/` when an active context exists.
 - Use `zero-context-compact` before `context.md` grows beyond `20,000` bytes or `200` lines when the file needs a deterministic summary-plus-references rewrite.
-- When compaction materially shortens the summary entrypoint, evaluate whether any reusable change now needs promotion through `.zero-memory/daily/` and `zero-memory-curator` so it remains recallable outside the task-local references, including reusable code-structure analysis and other durable technical insight.
+- When compaction materially shortens the summary entrypoint, evaluate whether any cross-task reusable change now needs promotion through `.zero-memory/daily/` and `zero-memory-curator` so it remains recallable outside the task-local references, including reusable code-structure cues or other durable lookup paths.
+- Do not promote task-local analysis just because it was moved into `references/`; promote only the reusable abstraction, correction, workflow rule, or lookup cue.
 - When a script matters for continuation, mention it in `context.md` with its purpose and assumptions.
 - Keep the latest truth easy to spot.
 - When an earlier assumption becomes wrong, leave a visible correction instead of silently letting stale notes stand.

@@ -24,7 +24,11 @@ The todo list is a context reference file, not an execution queue.
 
 1. Read `.zero-memory/tmp/current-context.txt`.
 2. If it contains a non-empty path, use that as the active `context.md`.
-3. If there is still no active context path, ask the user which context to use or whether to create one. Do not invent a new context silently.
+3. If the file is missing or empty, use `.zero-memory/context/default/context.md` as the active `context.md`, create `.zero-memory/tmp/` if needed, and write that path to `.zero-memory/tmp/current-context.txt`.
+4. If the target `context.md` does not exist, create it with minimal YAML frontmatter:
+   - `name: default`
+   - `description: Default zero-memory task context.`
+5. Do not choose a new task-specific context silently. Use another context only when the user explicitly asks for it or the current workflow explicitly requires it.
 
 Once the active context is known:
 

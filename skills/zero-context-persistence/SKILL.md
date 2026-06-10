@@ -87,10 +87,11 @@ Use `context.md` for the compact summary a restarted agent should read first:
 
 Correlation rule:
 
-- Only record work that actually belongs to the active context.
-- If the current task, or a subtask discovered during the task, is not meaningfully correlated to the active context, do not write that unrelated progress, analysis, or status into the current `context.md`.
-- If the unrelated work still needs restart-safe tracking, use a separate context only when the user explicitly asks for that context or the workflow explicitly requires creating or switching to one.
-- If no separate context is created, keep the unrelated work out of the current context rather than mixing two task histories together.
+- Treat the active context as the user's chosen continuity workspace, not as a single-task silo.
+- If the user intentionally continues in the same context while changing topics or adding a different workstream, keep using the active `context.md` and add clearly labeled sections or bullets for the new workstream.
+- When recording a different workstream in the same context, include enough relationship and status detail that a restarted agent can tell what belongs together, what is merely adjacent, and where to resume.
+- Create or switch to a separate context only when the user explicitly asks, the workflow explicitly requires it, or mixing the workstreams would make continuation materially confusing or unsafe.
+- Do not drop useful restart state just because it is not tightly correlated with the context's original topic; preserve it in the active context when that is the continuity surface the user is using.
 
 Path-writing rule:
 
@@ -106,7 +107,7 @@ When `context.md` becomes too large or the user asks to summarize it:
 3. Keep the new `context.md` short and current instead of deleting the older detail.
 4. Add a `## References` section in `context.md` that lists each reference file with a short description of what it contains.
 5. If the detail came from an older, larger `context.md`, say that clearly in the reference descriptions so a restarted agent knows those files preserve the original detail.
-6. After compaction, compare the rewritten summary with the preserved references. If the rewrite moved or compressed reusable knowledge that would now be easier to miss, including corrections, workflow rules, debugging methods, code-structure or call-path analysis, behavior notes, design decisions, or other durable technical insight, append a daily-learning entry and hand its ID to `zero-memory-curator` in the same turn.
+6. After compaction, compare the rewritten summary with the preserved references. If the rewrite moved or compressed cross-task reusable knowledge that would now be easier to miss, including corrections, workflow rules, debugging methods, reusable behavior notes, or durable recall cues, append a daily-learning entry and hand its ID to `zero-memory-curator` in the same turn. Keep task-local code-structure, call-path, design rationale, and debug chronology in `references/` unless the reusable abstraction itself is clear.
 7. Keep `context.md` under `20,000` bytes and `200` lines. Use `python3 "${context_persistence_scripts}/compact_context.py" --max-bytes 20000 --max-lines 200` when a deterministic rewrite into classified `references/` files is needed.
 
 Example reference descriptions:
@@ -142,41 +143,9 @@ When a script is important for continuation, mention it in `context.md` with:
 - the key inputs or assumptions
 - whether it has already been run and what it produced
 
-If a script becomes broadly reusable across tasks, consider promoting it into a project skill or a shared script location instead of keeping it task-local forever.
-
 Use `zero-context-compact` when the task needs a deterministic compaction pass that snapshots the old `context.md`, rewrites a concise summary, and splits durable detail into named `references/` files. The underlying rewrite command is `python3 "${context_persistence_scripts}/compact_context.py" --max-bytes 20000 --max-lines 200`.
 
-## 6) Design-analysis workflows
-
-When the task includes design authoring, use the same task context directory as the analysis foundation for the design.
-
-Typical design-analysis content includes:
-
-- codebase exploration: existing implementation patterns, key data structures, relevant subsystems
-- call-path analysis: important function call chains, entry points, and flow diagrams with file paths and line numbers
-- current behavior: how the code works today, including edge cases and platform differences
-- root-cause analysis: for bug fixes, what actually causes the problem and why
-- architecture observations: why the existing code is structured the way it is
-
-For design-heavy tasks:
-
-- do the summary in the active task context before writing the design doc
-- keep deeper analysis in `context.md` or split it into `references/` when the detail becomes too large
-- keep updating the same task context directory during design authoring, implementation, and debugging
-- include concrete file paths, line numbers, code snippets, tables, or diagrams when they materially improve clarity
-- keep the context focused on analysis and discovery rather than duplicating the design document
-- let the design document reference the task context instead of repeating the full analysis
-
-Useful sections for these tasks often include:
-
-- complete function call chains with callers
-- key data structures and relationships
-- entry point inventory
-- platform-specific behavior differences
-- corrections to earlier assumptions
-- important code patterns or macros used by related code
-
-## 7) How to write corrections
+## 6) How to write corrections
 
 When new investigation disproves an earlier assumption:
 
@@ -187,7 +156,7 @@ When new investigation disproves an earlier assumption:
 
 Preserve useful history, but make the latest understanding obvious.
 
-## 8) Daily-learning extraction and handoff
+## 7) Daily-learning extraction and handoff
 
 When the skill logs a reusable new item into `context.md`, or reconciles `context.md` on completion, it should decide whether the new information belongs beyond the current task.
 
@@ -205,8 +174,8 @@ Extract when the item is:
 - a verified workflow rule
 - a correction to an earlier wrong assumption
 - a reusable debugging or validation method
-- a durable code-structure, call-path, or behavior analysis that would save future investigation work
-- a durable design decision with rationale
+- a cross-task reusable code-structure, call-path, or behavior cue that would save future investigation work
+- a durable design decision only when its rationale is reusable beyond the current task
 - a feature-gap or tooling-gap discovery
 - a recurring failure-prevention rule
 
@@ -223,12 +192,12 @@ If the item is reusable:
 2. Give it a globally unique ID in the format `DL-YYYYMMDD-HHMMSS.mmmZ-<random-suffix>`.
 3. Preserve provenance back to the source task context and source sections.
 4. When the new item corrects older learning or curated memory, add lightweight lifecycle metadata such as `Supersedes Daily Learning IDs` or `Supersedes Memory IDs` when the corrected targets are known.
-5. Pass the new daily-learning entry ID to `zero-memory-curator` directly instead of routing through `self-improving-agent`.
 
 Compaction-specific reminder:
 
 - When `zero-context-compact` rewrites `context.md`, treat the preserved `references/` files and the shorter replacement summary as a recall-risk review.
-- If reusable information would now be easier to miss because it mostly lives in archived references or was compressed into a short summary bullet, promote that item through daily learning and `zero-memory-curator` before closing the task, including reusable code-structure analysis, behavior notes, and other durable technical insight rather than only workflow or debugging rules.
+- If cross-task reusable information would now be easier to miss because it mostly lives in archived references or was compressed into a short summary bullet, promote that item through daily learning and `zero-memory-curator` before closing the task, including reusable code-structure cues or behavior notes rather than only workflow or debugging rules.
+- Do not promote task-local analysis just because it was moved into `references/`; promote only the reusable abstraction, correction, workflow rule, or lookup cue.
 - If the rewrite only moved task-local history with no reusable rule, correction, or method, do not create memory noise just because compaction happened.
 
 Recommended entry shape:
@@ -270,7 +239,7 @@ When the corrected target is not yet known:
 
 Daily learning remains the append-first evidence log, but later curation may update lightweight lifecycle metadata such as `Status` or supersession links when cross-references become known.
 
-## 9) Completion workflow
+## 8) Completion workflow
 
 Before final handoff, if an active context path is in use:
 
@@ -280,7 +249,7 @@ Before final handoff, if an active context path is in use:
 4. Correct misunderstandings that are still visible in the file.
 5. Remove or rewrite stale worktree-specific absolute repo paths unless the task explicitly depends on those exact paths.
 6. Drop or move aside notes that turned out to belong to an unrelated task thread instead of leaving them mixed into the current context history.
-7. Explicitly evaluate whether useful work or problem-solving produced extractable knowledge using the Section 8 checklist, then extract reusable findings into `.zero-memory/daily/` when they meet the daily-learning criteria.
+7. Explicitly evaluate whether useful work or problem-solving produced extractable knowledge using the Section 7 checklist, then extract reusable findings into `.zero-memory/daily/` when they meet the daily-learning criteria.
 8. Ensure `## References` still points to the right supporting files and descriptions.
 9. Mark the task status clearly, including any remaining follow-up items.
 
@@ -295,7 +264,7 @@ The completion state should let a restarted agent answer:
 - Where should work resume?
 - Which reference files or task-local scripts matter next?
 
-## 10) Resume behavior
+## 9) Resume behavior
 
 When resuming a saved task:
 
@@ -305,11 +274,11 @@ When resuming a saved task:
 4. Verify any time-sensitive assumptions against the code or environment before acting on them.
 5. Continue updating the same task context directory as the task evolves.
 
-## 11) Suggested template
+## 10) Suggested template
 
 Use the template in [reference.md](reference.md) when you need a starting structure or a compact summary layout.
 
-## 12) Shared context-description helper
+## 11) Shared context-description helper
 
 Use `scripts/load_context_descriptions.py` when you need a lightweight summary of saved task contexts without opening each file manually.
 
