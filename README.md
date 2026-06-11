@@ -30,8 +30,21 @@ Normal dashboard generation does not require TypeScript tooling because the comp
 
 Choose one setup path:
 
-- Use Auto Configuration for the normal `install.sh` setup.
+- Use Git Submodule Setup for the recommended updateable project layout.
+- Use Auto Configuration for a one-shot `install.sh` setup.
 - Use Manual Configuration when you want to inspect, copy, or merge each file by hand.
+
+### Git Submodule Setup (Recommended)
+
+Use this option when the target project is a git repository and you want `zero-agent-memory` to stay updateable as a third-party skill pack.
+
+See [zero-agent-memory-example](https://github.com/zero-chaoslab/zero-agent-memory-example) for a complete submodule layout with `zero-agent-memory` under `extra/zero-agent-memory` and agent-facing skill symlinks under `skills/`.
+
+If the target project already has `AGENTS.md`, agent skill directories, or `.claude/settings.json`, merge those files by hand instead of overwriting them. Keep `extra/zero-agent-memory` as the canonical source and update it with normal git submodule commands.
+
+### Auto Configuration
+
+Use this option when you want the installer to copy the skills into the selected agent directory.
 
 First clone this repository:
 
@@ -39,8 +52,6 @@ First clone this repository:
 git clone https://github.com/zero-chaoslab/zero-agent-memory.git
 cd zero-agent-memory
 ```
-
-### Auto Configuration
 
 Then run the installer for the agent setup you want:
 
@@ -50,7 +61,7 @@ bash install.sh --project {your project path} --agent codex
 
 Use `--agent cursor`, `--agent claude`, or `--agent all` instead of `--agent codex` when needed.
 
-The installer appends the generic rules to the target project's `AGENTS.md`, copies skills for the selected agent, and creates Claude hook settings when installing Claude into a project that does not already have `.claude/settings.json`. If you use `install.sh`, you do not need to repeat the manual configuration steps below.
+The installer installs or updates the managed zero-agent-memory block in the target project's `AGENTS.md`, refreshes skills for the selected agent, and creates Claude hook settings when installing Claude into a project that does not already have `.claude/settings.json`. If you use `install.sh`, you do not need to repeat the manual configuration steps below.
 
 ### Manual Configuration
 

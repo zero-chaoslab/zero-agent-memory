@@ -6,13 +6,13 @@ usage() {
 Usage:
   bash install.sh --project {your project path} --agent codex
 
-Install zero-agent-memory rules and skills into a target project.
+Install or update zero-agent-memory rules and skills in a target project.
 
 Agents:
-  codex   Copy skills to {your project path}/.codex/skills
-  cursor  Copy skills to {your project path}/.cursor/skills
-  claude  Copy skills to {your project path}/.claude/skills and add Claude hooks when settings.json is absent
-  all     Install Codex, Cursor, and Claude skill copies
+  codex   Copy or update skills in {your project path}/.codex/skills
+  cursor  Copy or update skills in {your project path}/.cursor/skills
+  claude  Copy or update skills in {your project path}/.claude/skills and add Claude hooks when settings.json is absent
+  all     Install or update Codex, Cursor, and Claude skill copies
 EOF
 }
 
@@ -76,9 +76,59 @@ agents_file="$project_root/AGENTS.md"
 marker_start="<!-- BEGIN zero-agent-memory AGENTS.md -->"
 marker_end="<!-- END zero-agent-memory AGENTS.md -->"
 
-append_agents_rules() {
+install_or_update_agents_rules() {
   if [[ -f "$agents_file" ]] && grep -Fq "$marker_start" "$agents_file"; then
-    echo "Agent rules already installed: $agents_file"
+    if ! grep -Fq "$marker_end" "$agents_file"; then
+      echo "Found start marker without end marker in: $agents_file" >&2
+      echo "Please repair the zero-agent-memory block before running the installer again." >&2
+      exit 65
+    fi
+
+    local tmp_file
+    tmp_file="$(mktemp "${agents_file}.tmp.XXXXXX")"
+
+    if awk -v start="$marker_start" -v end="$marker_end" -v rules_file="$repo_root/AGENTS.md" '
+      BEGIN {
+        while ((getline line < rules_file) > 0) {
+          rules = rules line ORS
+        }
+        close(rules_file)
+        in_block = 0
+        replaced = 0
+      }
+      index($0, start) {
+        print start
+        printf "%s", rules
+        print end
+        in_block = 1
+        replaced = 1
+        next
+      }
+      in_block {
+        if (index($0, end)) {
+          in_block = 0
+        }
+        next
+      }
+      { print }
+      END {
+        if (!replaced || in_block) {
+          exit 1
+        }
+      }
+    ' "$agents_file" > "$tmp_file"; then
+      if ! cp "$tmp_file" "$agents_file"; then
+        rm -f "$tmp_file"
+        echo "Failed to write updated agent rules to: $agents_file" >&2
+        exit 65
+      fi
+      rm -f "$tmp_file"
+      echo "Updated agent rules: $agents_file"
+    else
+      rm -f "$tmp_file"
+      echo "Failed to update managed agent rules block in: $agents_file" >&2
+      exit 65
+    fi
     return
   fi
 
@@ -93,9 +143,24 @@ append_agents_rules() {
 copy_skills() {
   local agent_dir="$1"
   local destination="$project_root/$agent_dir/skills"
+  local managed_path
+  local skill_path
+
   mkdir -p "$destination"
-  cp -R "$repo_root/skills/." "$destination/"
-  echo "Installed skills: $destination"
+
+  for managed_path in "$destination"/zero-context-* "$destination"/zero-memory-*; do
+    if [[ -e "$managed_path" || -L "$managed_path" ]]; then
+      rm -rf "$managed_path"
+    fi
+  done
+
+  for skill_path in "$repo_root"/skills/*; do
+    if [[ -d "$skill_path" ]]; then
+      cp -R "$skill_path" "$destination/"
+    fi
+  done
+
+  echo "Updated skills: $destination"
 }
 
 install_claude_settings() {
@@ -113,7 +178,7 @@ install_claude_settings() {
   echo "Installed Claude settings: $settings_file"
 }
 
-append_agents_rules
+install_or_update_agents_rules
 
 if [[ "$agent" == "codex" || "$agent" == "all" ]]; then
   copy_skills ".codex"
